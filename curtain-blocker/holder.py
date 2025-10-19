@@ -113,7 +113,7 @@ def get_blocker():
     # Flip it because we did oopsie
     blocker_final = blocker_final.mirror(Plane.ZY)
 
-    return blocker_final.move(Location((0, 0, base_height)))
+    return blocker_final.move(Location((0, 0, base_height*2-(base_fillet_radius+dent_fillet_radius)*2)))
 
 
 # Create parts
