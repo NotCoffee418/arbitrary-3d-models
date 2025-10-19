@@ -110,9 +110,6 @@ def get_blocker():
     # Try filleting - select edges and apply fillet
     blocker_final = fillet(blocker_final.edges(), radius=base_fillet_radius)
 
-    # Flip it because we did oopsie
-    blocker_final = blocker_final.mirror(Plane.ZY)
-
     return blocker_final.move(Location((0, 0, base_height*2-(base_fillet_radius+dent_fillet_radius)*2)))
 
 
