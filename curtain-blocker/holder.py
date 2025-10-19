@@ -39,7 +39,7 @@ dent_height = 3.2
 dent_fillet_radius = 0.2
 
 # Config blocker
-blocker_height = 20
+blocker_height = 30
 
 
 # Config validation
@@ -88,28 +88,31 @@ def get_slider():
 def get_blocker():
     deg = 8
     blocker = Box(base_width, base_length, blocker_height)
-    
+
     # Calculate exactly how far forward the cutter needs to be
     cutter_depth = base_width * math.sin(math.radians(deg)) + base_length*0.5
-    
+
     cutter = Box(base_width*2, cutter_depth, blocker_height*2)
-    
+
     pivot_x = base_width/2
     pivot_y = base_length/2
-    
+
     # Position cutter so its back edge is at the front of the blocker
     cutter = cutter.move(Location((0, base_length/2 + cutter_depth/2, 0)))
-    
+
     # Rotate around front-right corner
     cutter = cutter.move(Location((-pivot_x, -pivot_y, 0)))
     cutter = cutter.rotate(Axis.Z, deg)
     cutter = cutter.move(Location((pivot_x, pivot_y, 0)))
-    
+
     blocker_final = blocker - cutter
-    
+
     # Try filleting - select edges and apply fillet
     blocker_final = fillet(blocker_final.edges(), radius=base_fillet_radius)
-    
+
+    # Flip it because we did oopsie
+    blocker_final = blocker_final.mirror(Plane.ZY)
+
     return blocker_final.move(Location((0, 0, base_height)))
 
 
