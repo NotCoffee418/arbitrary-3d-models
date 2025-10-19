@@ -13,34 +13,35 @@ from build123d import *
 from ocp_vscode import *
 
 # Used to name the exported files
-PART_NAME = "part_name"
+PART_NAME = "rename_me_part_name"
 
 # %%
 # Algebra mode.
 
-box_w = 1.0
-box_h = 0.5
-base_d = 0.7
-dent_start_d = 0.3
-dent_d = 0.15
-dent_h = 0.1
+box_width = 2
+box_length = 0.5
+base_height = 1
+
+dent_y = 0.3  # Offset from bottom of box
+dent_depth = 0.15
+dent_height = 0.2
 
 # Base object
-base = Rectangle(box_w, box_h)
-base = extrude(base, base_d)
+base = Rectangle(box_width, box_length)
+base = extrude(base, base_height)
 
 # Dent shape function
 
 
 def get_dent():
-    dent_shape = Rectangle(box_w, dent_d)
-    dent_shape = extrude(dent_shape, dent_h)
+    dent_shape = Rectangle(box_width, dent_depth)
+    dent_shape = extrude(dent_shape, dent_height)
     return dent_shape
 
 
 # Specify dent locations
-dent_l = get_dent().move(Location((0, -box_h/2+dent_d/2, dent_start_d)))
-dent_r = get_dent().move(Location((0, box_h/2-dent_d/2, dent_start_d)))
+dent_l = get_dent().move(Location((0, -box_length/2+dent_depth/2, dent_y)))
+dent_r = get_dent().move(Location((0, box_length/2-dent_depth/2, dent_y)))
 
 # Subtract to remove like magic
 base = base - dent_l - dent_r
