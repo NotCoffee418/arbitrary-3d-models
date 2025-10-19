@@ -29,7 +29,7 @@ dent_h = 0.1
 base = Rectangle(box_w, box_h)
 base = extrude(base, base_d)
 
-# Dent
+# Dent shape function
 
 
 def get_dent():
