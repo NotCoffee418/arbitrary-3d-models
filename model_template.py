@@ -12,6 +12,12 @@
 from build123d import *
 from ocp_vscode import *
 
+# Import common parts
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from _common_parts.screws import *  # noqa: E402
+
 # Used to name the exported files
 PART_NAME = "rename_me_part_name"
 
