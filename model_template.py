@@ -59,5 +59,5 @@ exporter = Mesher()
 assert base is not None
 exporter.add_shape(export_part)
 exporter.write(f"{PART_NAME}.3mf")
-exporter.write("{PART_NAME}.stl")
+exporter.write(f"{PART_NAME}.stl")
 # %%
