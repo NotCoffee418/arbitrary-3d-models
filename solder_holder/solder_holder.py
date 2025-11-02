@@ -39,7 +39,7 @@ HOLDER_SHAFT_Y_SIZE = 63
 HOLDER_SHAFT_DEPTH = 3.2
 HOLDER_SHAFT_FILLET = 1.5
 HOLDER_BAR_DIAMETER = 15
-HOLDER_BAR_LENGTH = 60
+HOLDER_BAR_LENGTH = 65
 BAR_OFFSET_FROM_TOP = 5
 BAR_COVER_DIAMETER = 18
 BAR_COVER_THICKNESS = 3
@@ -81,12 +81,11 @@ with BuildPart() as shaft:
     fillet(shaft.edges(), radius=HOLDER_SHAFT_FILLET)
 
 # Holder bar
-# Holder bar
 with BuildPart() as holder_bar:
     with BuildSketch(Plane.XY.offset(HOLDER_SHAFT_DEPTH)):
         with Locations((0, HOLDER_SHAFT_Y_SIZE/2 - HOLDER_BAR_DIAMETER/2 - BAR_OFFSET_FROM_TOP, 0)):
             Circle(HOLDER_BAR_DIAMETER/2)
-    extrude(amount=HOLDER_BAR_LENGTH - HOLDER_SHAFT_DEPTH)
+    extrude(amount=HOLDER_BAR_LENGTH)
 
     # bar cover
     with BuildSketch(Plane.XY.offset(HOLDER_SHAFT_DEPTH + HOLDER_BAR_LENGTH - BAR_COVER_THICKNESS)):
@@ -98,6 +97,14 @@ with BuildPart() as holder_bar:
     top_edges = holder_bar.edges().sort_by(Axis.Z)[-1]  # Get top edge
     fillet(top_edges, radius=0.5)
 
+    # Fillet the bottom of the bar cover
+    bottom_edges = (
+        holder_bar.edges()
+        .filter_by(Axis.Z, Plane.XY.offset(HOLDER_SHAFT_DEPTH + HOLDER_BAR_LENGTH - BAR_COVER_THICKNESS))
+        .filter_by(Axis.Y, Plane.YZ.offset(HOLDER_SHAFT_Y_SIZE/2 - HOLDER_BAR_DIAMETER/2 - BAR_OFFSET_FROM_TOP))
+    )
+    fillet(bottom_edges, radius=0.5)
+
 
 # Final
 with BuildPart() as final_base:
@@ -107,7 +114,8 @@ with BuildPart() as final_base:
 
 with BuildPart() as final_holder:
     add(shaft.part, mode=Mode.ADD)
-    add(holder_bar.part, mode=Mode.ADD)
+    with Locations((0, 0, -1)):
+        add(holder_bar.part, mode=Mode.ADD)
 
 with BuildPart() as combined:
     add(final_base.part, mode=Mode.ADD)
