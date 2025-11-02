@@ -1,5 +1,5 @@
 # %%
-
+# type: ignore
 # CTRL+Shift+P > OCP CAD VIEWER: Open CAD Viewer
 
 # The markers "# %%" separate code blocks for execution (cells)
@@ -54,13 +54,13 @@ base = base - dent_l - dent_r
 
 
 # show([base, dent_l, dent_r]) # Preview with removed part visible
-show(base)
+show(base, reset_camera=False)
 
 # %%
 # Export
 export_part = base
 
-show(export_part)
+show(export_part, reset_camera=False)
 exporter = Mesher()
 assert base is not None
 exporter.add_shape(export_part)
