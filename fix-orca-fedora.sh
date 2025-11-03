@@ -18,4 +18,4 @@ flatpak override --user io.github.softfever.OrcaSlicer \
   --filesystem=/mnt \
   --filesystem=/media
 
-echo "Done! Close and reopen OrcaSlicer for changes to take effect."
+echo "Seems to break arbitrarily because race condition. Restart a few times. If you see recent files, it works."
