@@ -20,7 +20,9 @@ from _common_parts.screws import *  # noqa: E402
 from _common_parts.fillet_assist import *  # noqa: E402
 from _common_parts.export import export_model  # noqa: E402
 
-from blocker import get_slider, base_height
+from curtain_blocker.blocker import get_slider, base_height
+
+
 
 # Used to name the exported files
 PART_NAME = "curtain_holder"
