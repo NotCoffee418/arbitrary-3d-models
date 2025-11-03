@@ -142,6 +142,14 @@ show(combined, reset_camera=False)
 
 exporter_combined = Mesher()
 exporter_combined.add_shape(combined.part)
-exporter_combined.write(f"{PART_NAME}.3mf")
 exporter_combined.write(f"{PART_NAME}.stl")
+
+
+# STEP export
+export_step(combined.part, f"{PART_NAME}.step")
+
+# STL export (your existing way)
+exporter_mesh = Mesher()
+exporter_mesh.add_shape(combined.part)
+exporter_mesh.write(f"{PART_NAME}.stl")
 # %%
