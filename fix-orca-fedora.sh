@@ -11,6 +11,7 @@ flatpak override --user io.github.softfever.OrcaSlicer \
   --env=GBM_BACKEND=dri \
   --env=WEBKIT_DISABLE_DMABUF_RENDERER=1 \
   --env=GDK_BACKEND=x11 \
+  --env=GDK_SYNCHRONIZE=1 \
   --socket=x11 \
   --socket=fallback-x11 \
   --device=dri \
