@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from _common_parts.screws import *  # noqa: E402
+from _common_parts.export import export_model  # noqa: E402
 
 # Used to name the exported files
 PART_NAME = "solder_holder"
@@ -130,26 +131,6 @@ show(combined, reset_camera=False)
 # Export
 
 show(combined, reset_camera=False)
-# exporter_base = Mesher()
-# exporter_base.add_shape(final_base.part)
-# exporter_base.write(f"{PART_NAME}_base.3mf")
-# exporter_base.write(f"{PART_NAME}_base.stl")
+export_model(combined.part, PART_NAME)
 
-# exporter_combined = Mesher()
-# exporter_combined.add_shape(final_holder.part)
-# exporter_combined.write(f"{PART_NAME}_holder.3mf")
-# exporter_combined.write(f"{PART_NAME}_holder.stl")
-
-exporter_combined = Mesher()
-exporter_combined.add_shape(combined.part)
-exporter_combined.write(f"{PART_NAME}.stl")
-
-
-# STEP export
-export_step(combined.part, f"{PART_NAME}.step")
-
-# STL export (your existing way)
-exporter_mesh = Mesher()
-exporter_mesh.add_shape(combined.part)
-exporter_mesh.write(f"{PART_NAME}.stl")
 # %%

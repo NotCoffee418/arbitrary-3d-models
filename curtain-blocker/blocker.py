@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from _common_parts.screws import *  # noqa: E402
 from _common_parts.fillet_assist import *  # noqa: E402
+from _common_parts.export import export_model  # noqa: E402
 
 
 # Used to name the exported files
@@ -127,8 +128,5 @@ show(export_part)  # Preview with removed part visible
 
 
 show(export_part)
-exporter = Mesher()
-exporter.add_shape(export_part)
-exporter.write(f"{PART_NAME}.3mf")
-exporter.write(f"{PART_NAME}.stl")
+export_model(export_part, PART_NAME)
 # %%
