@@ -214,3 +214,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Custom
+*.gcode
+*.3mf
+
+# for whatever reason, it exports to _common_parts, let's avoid that
+_common_parts/*.stl
+_common_parts/*.step
+_common_parts/*.3mf
