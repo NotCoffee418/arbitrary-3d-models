@@ -27,17 +27,24 @@ PART_NAME = "s22_case"
 # %%
 # Samsung S22 dimensions from our measurements
 # Phone dimensions (with camera bump)
-phone_height = 146.2  # mm
-phone_width = 70.6   # mm (without volume buttons)
-phone_depth = 7.5    # mm (without camera bump)
+# These may be adjusted based on actual tightness fit
+phone_height = 145.8  # mm
+phone_width = 70   # mm (without volume buttons)
+phone_depth = 8    # mm (without camera bump)
 
 # Case parameters
 wall_thickness = 1.6  # mm on all sides
-corner_radius = 5   # mm est 4.8 consensus but clearance and likely wrongness
+corner_radius = 9.6   # mm est 4.8 consensus but clearance and likely wrongness
 edge_radius = 1.0     # mm for edge filleting
 
 # Comfort fillet
 comfort_fillet = 1
+
+# Offset for side cutouts in Z direction (positive = higher)
+cutout_z_offset = 1  # mm
+
+# Bulge amount for curved sides (outward curvature)
+side_bulge = 0.8  # mm - how much the sides bulge outward at the middle
 
 # Lip that holds the phone in - reduced thickness
 lip_height = 0.6  # mm - thinner lip
@@ -56,42 +63,99 @@ print(f"Case outer dimensions: {case_height} x {case_width} x {case_depth}")
 
 # Create the case in Algebra mode
 
-# Create outer shell - rounded rectangle for the case
-outer_shell = RectangleRounded(case_width, case_height, corner_radius)
-outer_shell = extrude(outer_shell, case_depth)
+# Create outer shell with bulging sides using loft
+# Bottom profile
+bottom_profile = RectangleRounded(case_width, case_height, corner_radius)
+
+# Middle profile (bulged out)
+middle_profile = RectangleRounded(
+    case_width + 2 * side_bulge,
+    case_height + 2 * side_bulge,
+    corner_radius
+)
+middle_profile = middle_profile.move(Location((0, 0, case_depth / 2)))
+
+# Top profile
+top_profile = RectangleRounded(case_width, case_height, corner_radius)
+top_profile = top_profile.move(Location((0, 0, case_depth)))
+
+# Loft between profiles to create bulged sides
+outer_shell = loft([bottom_profile, middle_profile, top_profile])
 
 # Round bottom edge for comfort
 outer_shell = fillet(outer_shell.edges(), comfort_fillet)
 
 
 # Create phone cavity - what we subtract from the shell
-# Make cavity slightly larger for clearance
-clearance = 0.2  # mm extra space for phone to fit
+# Make cavity slightly larger for clearance=
+clearance = 0.2
+
 cavity_width = phone_width + clearance
 cavity_height = phone_height + clearance
 cavity_depth = phone_depth + clearance
 
 
-# Position cavity at top of case (leaving wall at bottom)
-cavity = RectangleRounded(cavity_width, cavity_height,
-                          corner_radius - wall_thickness)
-cavity = extrude(cavity, cavity_depth)
-cavity = cavity.move(Location((0, 0, wall_thickness)))
+# Position cavity at top of case (leaving wall at bottom) with bulging sides
+cavity_base_z = wall_thickness
+
+# Bottom profile
+cavity_bottom = RectangleRounded(
+    cavity_width, cavity_height, corner_radius - wall_thickness
+)
+cavity_bottom = cavity_bottom.move(Location((0, 0, cavity_base_z)))
+
+# Middle profile (bulged)
+cavity_middle = RectangleRounded(
+    cavity_width + 2 * side_bulge,
+    cavity_height + 2 * side_bulge,
+    corner_radius - wall_thickness
+)
+cavity_middle = cavity_middle.move(
+    Location((0, 0, cavity_base_z + cavity_depth / 2)))
+
+# Top profile
+cavity_top = RectangleRounded(
+    cavity_width, cavity_height, corner_radius - wall_thickness
+)
+cavity_top = cavity_top.move(Location((0, 0, cavity_base_z + cavity_depth)))
+
+# Loft to create bulged cavity
+cavity = loft([cavity_bottom, cavity_middle, cavity_top])
 cavity = fillet(cavity.edges(), comfort_fillet)
 
 # Create a cutout for the screen, leaving a lip
-screen_cutout_width = phone_width - 2 * lip_height
-screen_cutout_height = phone_height - 2 * lip_height
+lip_overhang = 3
+screen_cutout_width = phone_width - lip_overhang * lip_height
+screen_cutout_height = phone_height - lip_overhang * lip_height
 screen_cutout_radius = corner_radius - lip_height
 
-screen_cutout = RectangleRounded(
+# Create screen cutout with bulging sides using loft
+screen_base_z = phone_depth + wall_thickness
+cutout_depth = wall_thickness + clearance
+
+# Bottom profile (at the base)
+screen_bottom = RectangleRounded(
     screen_cutout_width, screen_cutout_height, screen_cutout_radius
 )
-# Extrude through the front wall of the case
-screen_cutout = extrude(screen_cutout, wall_thickness + clearance)
-# Position screen cutout at the front of the case
-screen_cutout = screen_cutout.move(
-    Location((0, 0, phone_depth + wall_thickness)))
+screen_bottom = screen_bottom.move(Location((0, 0, screen_base_z)))
+
+# Middle profile (bulged)
+screen_middle = RectangleRounded(
+    screen_cutout_width + 2 * side_bulge,
+    screen_cutout_height + 2 * side_bulge,
+    screen_cutout_radius
+)
+screen_middle = screen_middle.move(
+    Location((0, 0, screen_base_z + cutout_depth / 2)))
+
+# Top profile
+screen_top = RectangleRounded(
+    screen_cutout_width, screen_cutout_height, screen_cutout_radius
+)
+screen_top = screen_top.move(Location((0, 0, screen_base_z + cutout_depth)))
+
+# Loft to create bulged screen cutout
+screen_cutout = loft([screen_bottom, screen_middle, screen_top])
 
 
 # Subtract cavity from shell
@@ -117,16 +181,18 @@ except Exception as e:
 # Add cutouts for ports and buttons
 
 # Bottom cutout for charging port (USB-C centered)
+# Note this also has mic hole
 charging_width = 16  # mm - USB-C standard width
 charging_height = 6  # mm - USB-C standard height
 charging_depth = wall_thickness + 2  # through the wall
+charging_x_offset = -2.5  # from center
 
 charging_cutout = Box(charging_width, charging_depth, charging_height,
                       align=(Align.CENTER, Align.MIN, Align.CENTER))
 # Round with 2mm radius for comfortable cable insertion
 charging_cutout = fillet(charging_cutout.edges().filter_by(Axis.Y), 2.0)
 charging_cutout = charging_cutout.move(
-    Location((0, -case_height/2 - 1, case_depth/2)))
+    Location((charging_x_offset, -case_height/2 - 1, case_depth/2 + cutout_z_offset)))
 
 phone_case = phone_case - charging_cutout
 
@@ -134,12 +200,13 @@ phone_case = phone_case - charging_cutout
 speaker_width = 12  # mm
 speaker_height = 5  # mm
 speaker_depth = wall_thickness + 2  # through the wall
+speaker_x_offset = 55  # mm from left edge
 
 speaker_cutout = Box(speaker_width, speaker_depth, speaker_height,
                      align=(Align.CENTER, Align.MIN, Align.CENTER))
 speaker_cutout = fillet(speaker_cutout.edges().filter_by(Axis.Y), 1.5)
 speaker_cutout = speaker_cutout.move(
-    Location((-case_width/2 + 53, -case_height/2 - 1, case_depth/2)))
+    Location((-case_width/2 + speaker_x_offset, -case_height/2 - 1, case_depth/2 + cutout_z_offset)))
 
 phone_case = phone_case - speaker_cutout
 
@@ -156,7 +223,7 @@ mic_cutout = Cylinder(
 mic_cutout = mic_cutout.rotate(Axis.X, 90)
 # Position at X=8 on the TOP edge
 mic_cutout = mic_cutout.move(
-    Location((8, case_height/2 + 1, case_depth/2)))
+    Location((8, case_height/2 + 1, case_depth/2 + cutout_z_offset)))
 
 phone_case = phone_case - mic_cutout
 
@@ -164,12 +231,13 @@ phone_case = phone_case - mic_cutout
 volume_cutout_height = 20  # mm - length of volume rocker
 volume_cutout_depth = 4  # mm - how deep into case
 volume_cutout_width = wall_thickness + 2  # through the wall
+volume_button_y_offset = -47.5  # from top edge
 
 volume_cutout = Box(volume_cutout_width, volume_cutout_height, volume_cutout_depth,
                     align=(Align.MAX, Align.CENTER, Align.CENTER))
 volume_cutout = fillet(volume_cutout.edges().filter_by(Axis.X), 1.5)
 volume_cutout = volume_cutout.move(
-    Location((case_width/2 + 1, case_height/2 - 46, case_depth/2)))
+    Location((case_width/2 + 1, case_height/2 + volume_button_y_offset, case_depth/2 + cutout_z_offset)))
 
 phone_case = phone_case - volume_cutout
 
@@ -177,12 +245,13 @@ phone_case = phone_case - volume_cutout
 power_cutout_height = 12  # mm - power button size
 power_cutout_depth = 3.5  # mm
 power_cutout_width = wall_thickness + 2  # through the wall
+power_button_y_offset = -70  # from top edge
 
 power_cutout = Box(power_cutout_width, power_cutout_height, power_cutout_depth,
                    align=(Align.MAX, Align.CENTER, Align.CENTER))
 power_cutout = fillet(power_cutout.edges().filter_by(Axis.X), 1.5)
 power_cutout = power_cutout.move(
-    Location((case_width/2 + 1, case_height/2 - 68, case_depth/2)))
+    Location((case_width/2 + 1, case_height/2 + power_button_y_offset, case_depth/2 + cutout_z_offset)))
 
 phone_case = phone_case - power_cutout
 
@@ -211,8 +280,8 @@ bottom_left_edges = [e for e in camera_cutout.edges().filter_by(
 camera_cutout = fillet(top_right_edges + bottom_left_edges, corner_radius)
 
 # Position at top-left corner accounting for wall thickness
-camera_x_offset = case_width/2 - camera_width/2 - wall_thickness
-camera_y_offset = case_height/2 - camera_height/2 - wall_thickness
+camera_x_offset = case_width/2 - camera_width/2 - wall_thickness - 2
+camera_y_offset = case_height/2 - camera_height/2 - wall_thickness - 2
 
 camera_cutout = camera_cutout.move(
     Location((camera_x_offset, camera_y_offset, -1)))
@@ -220,8 +289,8 @@ camera_cutout = camera_cutout.move(
 phone_case = phone_case - camera_cutout
 
 # Flashlight cutout (circular, tapered from 5mm to 6mm diameter)
-flashlight_diameter_top = 5  # mm - at the back surface
-flashlight_diameter_bottom = 6  # mm - at the inner surface
+flashlight_diameter_top = 6  # mm - at the back surface
+flashlight_diameter_bottom = 6.1  # mm - at the inner surface
 flashlight_depth = wall_thickness + 2  # through the back wall
 
 flashlight_x_offset = phone_width / 2 - 27
@@ -289,11 +358,11 @@ try:
 except Exception as e:
     print(f"Filleting failed: {e}, continuing without fillets")
 
-
-# %%
-
 # Show the result
 show(phone_case, reset_camera=False)
+# %%
+
+
 # # Export
 export_model(phone_case, PART_NAME)
 # # %%rt_model(export_part, PART_NAME)
