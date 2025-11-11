@@ -33,7 +33,7 @@ phone_width = 70   # mm (without volume buttons)
 phone_depth = 8    # mm (without camera bump)
 
 # Case parameters
-wall_thickness = 1.6  # mm on all sides
+wall_thickness = 1.2  # mm on all sides
 corner_radius = 9.6   # mm est 4.8 consensus but clearance and likely wrongness
 edge_radius = 1.0     # mm for edge filleting
 
