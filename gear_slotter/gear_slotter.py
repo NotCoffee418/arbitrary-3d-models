@@ -25,8 +25,8 @@ PART_NAME = "gear_slotter"
 # %%
 # Algebra mode.
 
-outer_diam = 4.9
-inner_diam = 3.2
+outer_diam = 5
+inner_diam = 3.35
 height = 8.9
 hole_pos = 2
 hole_diam = 2.2
