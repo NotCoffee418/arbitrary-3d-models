@@ -500,4 +500,7 @@ export_model(front_cover_export, f"{PART_NAME}_front")
 
 back_cover_export = back_cover()
 export_model(back_cover_export, f"{PART_NAME}_back")
+
+foot_export = foot_final()
+export_model(foot_export, f"{PART_NAME}_foot")
 # %%
