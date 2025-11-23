@@ -106,11 +106,11 @@ def tft_hole():
     return th
 
 
-board_slot = base - (pir_hole() + tft_hole()) + get_all_holder_clips()
-show(board_slot, reset_camera=False)
+final = base - (pir_hole() + tft_hole()) + get_all_holder_clips()
+show(final, reset_camera=False)
 
 # %%
 # Export
-export_part = base
+export_part = final
 export_model(export_part, PART_NAME)
 # %%
