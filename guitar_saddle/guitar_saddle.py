@@ -30,7 +30,7 @@ box_length = 2.9
 second_length = 2.9
 
 
-base_height = 6
+base_height = 7
 cutout_height = 1  # to 5
 second_height = 2.66
 
