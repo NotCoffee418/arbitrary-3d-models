@@ -416,6 +416,11 @@ def back_cover():
         x_wall_z_pos))
     x_wall_edges = x_wall.edges().filter_by(Axis.Z)[0:2]
     x_wall = fillet(x_wall_edges, radius=CASE_FILLET_RADIUS)
+    
+    # Antenna hole
+    ah = Circle(3.5)
+    ah = extrude(ah, WALL_THICKNESS)
+    ah = ah.translate((-50,12,WALL_THICKNESS + CASE_Z_SPACE) )
 
     final_back_cover = bc + y_walls + x_wall - \
         (get_back_cover_screwholders_and_cutouts(
@@ -425,7 +430,7 @@ def back_cover():
             ASSEMBLY_VIEW_X_OFFSET,
             0,
             ASSEMBLY_VIEW_Z_OFFSET))
-    return final_back_cover
+    return final_back_cover - ah
 
 # def foot():
 #     foot = Rectangle
