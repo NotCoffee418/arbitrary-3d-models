@@ -9,7 +9,7 @@
 
 # %%
 # Imports and config
-from bd_warehouse.thread import IsoThread
+from bd_warehouse.thread import Thread
 from build123d import *
 from ocp_vscode import *
 
@@ -37,47 +37,36 @@ SEPERATOR_DIAMETER = 51
 
 CONTAINER_DIAMETER = 45
 # CONTAINER_HEIGHT = 80  # real value
-CONTAINER_HEIGHT = 15  # test print
+CONTAINER_HEIGHT = 5  # test print
+
 
 
 CONTAINER_WALL_THICKNESS = 4
 
 
-def get_container_screw():
-    """
-    Makes the threaded stud for the container.
-    No head, just the threaded cylinder.
-    """
-    # We use 'chamfer' on the bottom so it's easy to screw into the lid
-    # We use 'square' on the top so it sits flush against the container wall
-    end_finishes = ("chamfer", "square")
 
-    # Create the ISO thread
-    # major_diameter is the outer width (48.5)
-    thread = IsoThread(
-        major_diameter=SCREW_MAJOR_DIAMETER,
-        pitch=SCREW_PITCH,
-        length=SCREW_LENGTH,
-        external=True,
-        end_finishes=end_finishes,
-        interference=0.1
-    )
+def get_container_screw() -> Solid:
+    apex_r = SCREW_MAJOR_DIAMETER / 2
+    root_r = SCREW_CORE_DIAMETER / 2
 
-    # Create the core (the solid part inside the threads)
-    # We use the CORE_DIAMETER to ensure the 'valleys' of the thread are solid
-    core = Cylinder(
-        radius=SCREW_CORE_DIAMETER / 2,
-        height=SCREW_LENGTH
-    )
+    with BuildPart() as screw_bp:
+        Cylinder(
+            radius=root_r,
+            height=SCREW_LENGTH,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        )
+        Thread(
+            apex_radius=apex_r,
+            apex_width=1.5,
+            root_radius=root_r - 0.2,
+            root_width=2.0,
+            pitch=SCREW_PITCH,
+            length=SCREW_LENGTH,
+            end_finishes=("chamfer", "fade"),
+            interference=0.1,
+        )
 
-    # Move core so it starts at Z=0 and goes up to SCREW_LENGTH
-    core = core.move(Location((0, 0, SCREW_LENGTH/2)))
-
-    # Combine: The thread is the 'skin', the core is the 'meat'
-    # We use '+' to union them into one single solid part
-    screw_stud = thread + core
-
-    return screw_stud
+    return screw_bp.part
 
 
 def get_separator() -> Solid:
@@ -143,6 +132,7 @@ def get_container_cutout() -> Solid:
 # Combine everything
 final = (get_container_screw() + get_separator() +
          get_soap_container()) - get_container_cutout()
+# final=get_container_screw()
 
 
 # show([base, dent_l, dent_r]) # Preview with removed part visible
