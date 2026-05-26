@@ -29,20 +29,22 @@ PART_NAME = "hose_soap_container"
 # --- CONSTANTS ---
 SCREW_MAJOR_DIAMETER = 48.5
 SCREW_PITCH = 5.0
-SCREW_LENGTH = 10.0
-SCREW_CORE_DIAMETER = 46.5
+SCREW_ZONE_LENGTH = 10.0
+SCREW_LENGTH = 8
+SCREW_CORE_DIAMETER = 46.4
 
 SEPERATOR_HEIGHT = 4
 SEPERATOR_DIAMETER = 51
+SEPERATOR_TOP_CHAMFER = 1
+SEPERATOR_BOT_CHAMFER = 0.5
 
 CONTAINER_DIAMETER = 45
 # CONTAINER_HEIGHT = 80  # real value
-CONTAINER_HEIGHT = 5  # test print
+CONTAINER_HEIGHT = 80  # test print
 
 
-
-CONTAINER_WALL_THICKNESS = 4
-
+CONTAINER_WALL_THICKNESS = 3
+SEAL_CHAMFER = 0.5
 
 
 def get_container_screw() -> Solid:
@@ -52,19 +54,21 @@ def get_container_screw() -> Solid:
     with BuildPart() as screw_bp:
         Cylinder(
             radius=root_r,
-            height=SCREW_LENGTH,
+            height=SCREW_ZONE_LENGTH,
             align=(Align.CENTER, Align.CENTER, Align.MIN),
         )
-        Thread(
-            apex_radius=apex_r,
-            apex_width=1.5,
-            root_radius=root_r - 0.2,
-            root_width=2.0,
-            pitch=SCREW_PITCH,
-            length=SCREW_LENGTH,
-            end_finishes=("chamfer", "fade"),
-            interference=0.1,
-        )
+        with Locations((0,0,(SCREW_ZONE_LENGTH-SCREW_LENGTH))):
+            Thread(
+                apex_radius=apex_r,
+                apex_width=1.5,
+                root_radius=root_r - 0.2,
+                root_width=2.0,
+                pitch=SCREW_PITCH,
+                length=SCREW_LENGTH,
+                end_finishes=("chamfer", "fade"),
+                interference=0.1,
+            )
+            
 
     return screw_bp.part
 
@@ -73,9 +77,11 @@ def get_separator() -> Solid:
     """Return an additional cylindrical separator that sits directly on top of the screw."""
     # A simple cylinder – adjust dimensions as needed.
     sep = Cylinder(radius=SEPERATOR_DIAMETER/2, height=SEPERATOR_HEIGHT)
+    sep = chamfer(sep.edges()[0], length=SEPERATOR_TOP_CHAMFER)
+    sep = chamfer(sep.edges()[2], length=SEPERATOR_BOT_CHAMFER)
 
     # Position it exactly at the top of the screw (SCREW_LENGTH).
-    sep = sep.move(Location((0, 0, SCREW_LENGTH + SEPERATOR_HEIGHT/2)))
+    sep = sep.move(Location((0, 0, SCREW_ZONE_LENGTH + SEPERATOR_HEIGHT/2)))
 
     return sep
 
@@ -94,7 +100,7 @@ def get_soap_container() -> Solid:
 
     # Position it so its BOTTOM face sits at the TOP of the separator.
     # The top of the separator is at Z = SCREW_LENGTH + SEPERATOR_HEIGHT
-    z_start_position = SCREW_LENGTH + SEPERATOR_HEIGHT
+    z_start_position = SCREW_ZONE_LENGTH + SEPERATOR_HEIGHT
 
     # Move the cylinder so its base is at the calculated Z position
     container = container.move(
@@ -109,7 +115,7 @@ def get_container_cutout() -> Solid:
     The height is adjusted to leave a floor at the bottom.
     """
     # The total height of the entire object (from Z=0 to top)
-    total_assembly_height = SCREW_LENGTH + SEPERATOR_HEIGHT + CONTAINER_HEIGHT
+    total_assembly_height = SCREW_ZONE_LENGTH + SEPERATOR_HEIGHT + CONTAINER_HEIGHT
 
     # The height of our 'drill bit' (the cutout cylinder)
     # It starts at the top and goes down to the floor level.
@@ -131,7 +137,7 @@ def get_container_cutout() -> Solid:
 
 # Combine everything
 final = (get_container_screw() + get_separator() +
-         get_soap_container()) - get_container_cutout()
+         get_soap_container()) - (get_container_cutout())
 # final=get_container_screw()
 
 
